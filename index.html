@@ -595,8 +595,10 @@ function init(){
                     l.src = Ol.Util.urlAppend(capabilities.service.href, Ol.Util.getParameterString(legendArgs));
                     domAddNode(p,"br","","");
                     domAddNode(p,""," Source : ","");
-                    var a = domAddNode(p,'a',mdLayer.attribution.title,"attribution");
-                    a.href = mdLayer.attribution.href;
+                    if (mdLayer.attribution) {
+                        var a = domAddNode(p,'a',mdLayer.attribution.title,"attribution");
+                        a.href = mdLayer.attribution.href;
+                    }
                     domAddNode(p,"hr","","");
                 },
                 failure: function() {
