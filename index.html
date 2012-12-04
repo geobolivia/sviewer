@@ -98,7 +98,7 @@ var hardConfig = {
     // must match the TMS grid&scale if any
     maxExtent: new Ol.Bounds(-20037508.34, -20037508.34,20037508.34, 20037508.34),
     maxResolution: 156543.0339,
-    numZoomLevels: 21,
+    numZoomLevels: 18,
 
     // map center restricted in this extent
     restrictedExtent: new Ol.Bounds(-8766409.8999703,-3757032.81427298,-6261721.3575703,-0.0006729802116752),
@@ -115,38 +115,13 @@ var hardConfig = {
     // string matching empty gfi response, set your templates !
     nodata: '<!--nodatadetect-->\n<!--nodatadetect-->',
 
-    // geocoder
-    openLSGeocodeUrl: function () {
-        "use strict";
-        var url = "";
-        switch (window.location.host) {
-        case "dev.geobretagne.fr":
-            url = "http://gpp3-wxs.ign.fr/x1uy9hv7ojndca8335mhgv38/geoportail/ols?";
-            break;
-        case "test.geobretagne.fr":
-            url = "http://gpp3-wxs.ign.fr/xsjb3kmbejbpxp04tysclyrc/geoportail/ols?";
-            break;
-        case "geobretagne.fr":
-            url = "http://gpp3-wxs.ign.fr/01gwgg3by2fpaxwxrfgvynqw/geoportail/ols?";
-            break;
-        default:
-            url = "http://gpp3-wxs.ign.fr/01gwgg3by2fpaxwxrfgvynqw/geoportail/ols?";
-        }
-        return url;
-    },
-    openLSMaxResponses: 1,
-
     // array of background map layers. Only one shall be visible on startup.
     // The user can switch layers using a button.
     layersBackground: [
         new OpenLayers.Layer.OSM('OSM Mapnik'),
         new OpenLayers.Layer.Google(
             "Google Satellite",
-            {type: google.maps.MapTypeId.SATELLITE}
-        ),
-        new OpenLayers.Layer.Google(
-            "Google Physical",
-            {type: google.maps.MapTypeId.TERRAIN}
+            { type: google.maps.MapTypeId.SATELLITE, visibility: false }
         )
     ],
 
@@ -491,104 +466,45 @@ function init(){
     };
 
 
-    // geocodage via IGN
-    function openLs(text) {
-        try {
-            var q = text.trim();
-            var qa = q.split(",");
-            if (q!=="") {
-                var countryCode ="ALL";
-                var freeFormAddress ="";
-                if (qa.length>1) {
-                    // address and municipality separated by a comma
-                    var address = qa.slice(0,qa.length-1).join(" ").trim();
-                    var municipality = qa[qa.length-1].trim();
-                    countryCode="StreetAddress";
-                    freeFormAddress = address + " " + municipality;
 
-                } else {
-                    // municipality
-                    countryCode="PositionOfInterest";
-                    freeFormAddress = q;
-                }
-
-                Ol.Request.issue({
-                    method: 'POST',
-                    headers: { "Content-Type": "application/xml" },
-                    url: hardConfig.openLSGeocodeUrl(),
-                    data:[
-                        '<?xml version="1.0" encoding="UTF-8"?>\n',
-                        '<XLS xmlns:xls="http://www.opengis.net/xls" ',
-                        'xmlns:gml="http://www.opengis.net/gml" ',
-                        'xmlns="http://www.opengis.net/xls" ',
-                        'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ',
-                        'version="1.2" ',
-                        'xsi:schemaLocation="http://www.opengis.net/xls http://schemas.opengis.net/ols/1.2/olsAll.xsd">\n',
-                        '<RequestHeader/>\n',
-                        '<Request maximumResponses="',
-                        hardConfig.openLSMaxResponses,
-                        '" requestID="1" version="1.2" methodName="LocationUtilityService">\n',
-                        '<GeocodeRequest returnFreeForm="false">\n',
-                        '<Address countryCode="',
-                        countryCode,
-                        '">\n',
-                        '<freeFormAddress>',
-                        freeFormAddress,
-                        '</freeFormAddress>\n',
-                        '</Address>\n',
-                        '</GeocodeRequest>\n',
-                        '</Request>\n',
-                        '</XLS>'].join(""),
-                    failure: onOpenLSFailure,
-                    success: onOpenLSSuccess
-
-                });
-            }
-        }
-        catch(err) {
-            console.log(err.message);
-        }
-    }
-
-    var onOpenLSSuccess = function (response) {
-        //~ try {
-            var format = new Ol.Format.XML();
-            var doc = format.read(response.responseText);
-            var results = format.getElementsByTagNameNS(doc,"*","GeocodedAddress");
-            if (results.length>0) {
-                var position = format.getElementsByTagNameNS(results[0],"*","pos")[0];
-                var loc = (position.textContent) ? position.textContent.split(" ") : position.nodeTypedValue.split(" ");
-                var ptResult = new Ol.LonLat(loc[1], loc[0]).transform(new Ol.Projection("EPSG:4326"), new Ol.Projection("EPSG:900913"));
-                var matchType = results[0].getElementsByTagName("GeocodeMatchCode")[0].getAttribute("matchType");
-                switch (matchType) {
-                    case "City": zoom = 15; break;
-                    case "Street": zoom = 17; break;
-                    case "Street enhanced": zoom = 18; break;
-                    case "Street number": zoom = 18; break;
-                }
-
-                // map move and zoom
-                if (hardConfig.restrictedExtent.containsLonLat(ptResult)) {
-                    map.setCenter(ptResult, zoom);
-                    markGeoloc.addMarker(new Ol.Marker(ptResult));
-                }
-                else {
-                    alert("La geolocalización falló:\nlugar buscado fuera del mapa");
-                }
-            }
-            else {
-                alert("La geolocalización falló:\nningún resultado");
-            }
+    // geocoding by nominatim
+    var geocodeNominatim = function (value) {
+        markGeoloc.clearMarkers();
+        var address = value + ', Bolivia';
+        var request = OpenLayers.Request.issue({
+            method: 'GET',
+            params: {
+                q: address,
+                format: 'json'
+            },
+            url: 'http://nominatim.openstreetmap.org/search.php?',
+            failure: getNominatimFailure,
+            success: getNominatimSuccess
+        });
     };
 
-    var onOpenLSFailure = function (response) {
-        alert("lLa geolocalización falló");
+    var getNominatimSuccess = function (response) {
+        var obj = JSON.parse(response.responseText);
+        if (obj.length > 0) {
+            var nominatimResult = obj[0];
+            var msg = nominatimResult.display_name;
+            
+            var ptResult = new Ol.LonLat(nominatimResult.lon,  nominatimResult.lat).transform(new Ol.Projection("EPSG:4326"), new Ol.Projection("EPSG:900913"));
+            map.setCenter(ptResult, 15);
+            markGeoloc.addMarker(new Ol.Marker(ptResult));
+        } else {
+            alert("Nominatim", "Aucun resultat trouve.");
+        }
+    };
+    
+    var getNominatimFailure = function (e) {
+        alert(e);
     };
 
     Ol.Util.getElement("addressForm").onsubmit = function() {
         try {
             markGeoloc.clearMarkers();
-            openLs(addressInput.value);
+            geocodeNominatim(addressInput.value);
             return false;
         }
         catch(err) {
