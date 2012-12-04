@@ -128,11 +128,11 @@ var hardConfig = {
     // array of overlay layers. They are always visible.
     layersOverlay: [  
         new Ol.Layer.WMS(
-            "Departementos",
+            "Departamentos",
             "http://www.geo.gob.bo/geoserver/wms?",
             { layers: 'mddryt:Limites_departamentales', format: 'image/png', transparent: true },
             {
-                attribution: "Departementos: Ministerio de Desarrollo Rural y Tierras",
+                attribution: "Departamentos: Ministerio de Desarrollo Rural y Tierras",
                 isBaseLayer: false,
                 tileSize: new Ol.Size(256,256),
                 visibility: true
@@ -297,7 +297,7 @@ function init(){
 
         getFeatureInfo = new Ol.Control.WMSGetFeatureInfo({
             url: hardConfig.wms,
-            title: 'Interrogar el mapa por clic',
+            title: 'Consultar el mapa por clic',
             queryVisible: true,
             infoFormat: 'text/html',
             hover: false,
@@ -493,7 +493,7 @@ function init(){
             map.setCenter(ptResult, 15);
             markGeoloc.addMarker(new Ol.Marker(ptResult));
         } else {
-            alert("Nominatim", "Aucun resultat trouve.");
+            alert("Ningun lugar fue encontrado");
         }
     };
     
@@ -595,7 +595,7 @@ function init(){
                     l.src = Ol.Util.urlAppend(capabilities.service.href, Ol.Util.getParameterString(legendArgs));
                     if (mdLayer.attribution) {                    
                         domAddNode(p,"br","","");
-                        domAddNode(p,""," Source : ","");
+                        domAddNode(p,""," Recurso : ","");
                         var a = domAddNode(p,'a',mdLayer.attribution.title,"attribution");
                         a.href = mdLayer.attribution.href;
                     }
@@ -815,64 +815,64 @@ html,body {
 
         <!-- help -->
         <div id="helpFrame" class="popupFrame">
-            <h2>Comment utiliser cette carte</h2>
+            <h2>Como utilizar este mapa</h2>
             <table>
                 <tbody>
                     <tr>
-                        <td><img class="ico" src="img/home.png" title="bouton &eacute;tendue globale" /></td>
+                        <td><img class="ico" src="img/home.png" title="Boton vista inicial" /></td>
                         <td>
-                            Positionne la carte sur l'&eacute;tendue globale.
+                            Posiciona el mapa en el inicio.
                         </td>
                     </tr>
                     <tr>
-                        <td><img class="ico" src="img/back.png" title="bouton annuler dernier d&eacute;placement" /></td>
+                        <td><img class="ico" src="img/back.png" title="Boton atrás" /></td>
                         <td>
-                            Annule le dernier d&eacute;placement de carte.
+                            Anula el ultimo emplazamiento en el mapa.
                         </td>
                     </tr>
                     <tr>
-                        <td><img class="ico" src="img/plus.png" title="bouton zoom avant" /></td>
+                        <td><img class="ico" src="img/plus.png" title="Boton ir al interior" /></td>
                         <td>
-                            Effectue un zoom avant.
-                            Alternative: touche [+] du clavier, double-clic
+                            Efectue un zoom al interior.
+                            Alternativa: pulse [+] en el teclado, o doble clik.
                         </td>
                     </tr>
                     <tr>
-                        <td><img class="ico" src="img/minus.png" title="bouton zoom arri&egrave;re" /></td>
+                        <td><img class="ico" src="img/minus.png" title="Boton atras" /></td>
                         <td>
-                            Effectue un zoom arri&egrave;re.
-                            Alternative: touche [-] du clavier.
+                            Efectue zoom anterior.
+                            Alternativa: pulse[-] en el teclado.
                         </td>
                     </tr>
                     <tr>
-                        <td><img class="ico" src="img/layer.png" title="bouton fond de plan" /></td>
+                        <td><img class="ico" src="img/layer.png" title="Boton fondo de mapa" /></td>
                         <td>
-                            Change le fond de plan.
+                            Cambiar el fondo del mapa.
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>&eacute;crans tactiles</strong></td>
+                        <td><strong>Pantalla tactil</strong></td>
                         <td>
-                        Toucher la carte pour afficher les informations.
-                        Glisser sur l'&eacute;cran pour se d&eacute;placer sur la carte.
-                        Pincer l'&eacute;cran pour effectuer un zoom avant/arri&egrave;re.
+                        Pulsar en el mapa para mostrar la información.
+                        Navegar sobre la plantalla para desplazarse en el mapa.
+                        Puntear en la pantalla para acercarce y alejarse.
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>clavier<br />souris</strong></td>
+                        <td><strong>Teclado<br />Mouse</strong></td>
                         <td>
-                        Cliquer sur la carte pour afficher les informations.
-                        Pour Se d&eacute;placer,
-                        maintenir le bouton souris et glisser sur la carte, ou touches fl&eacute;ch&eacute;es du clavier.
-                        Pour recadrer,
-                        maintenir la touche MAJ du clavier et tracer un rectangle avec la souris, bouton maintenu.
+                        Hacer clic en el mapa para mostrar la información.
+                        Para desplazarse,
+                        Mantener pulsado el mouse y navegar sobre el mapa, o pulsar las flechas del teclado.
+                        Para encuadrar,
+                        mantener la tecla MAJ pulsada y trazar un rectangulo con el mouse.
                         </td>
                     </tr>
                 </tbody>
             </table>
             <p class="pcenter">
-                <a id="helpClose" class="bt" href="#" title="fermer l'aide">fermer</a>
-            </p>
+                <a id="helpClose" class="bt" href="#" title="Cerrar la ayuda">Cerrar</a>
+            </p> 
         </div>
 
         <!-- about -->
@@ -881,7 +881,7 @@ html,body {
             <div id="baseAttributions"></div>
             <div>visualizador : http://github.com/geobretagne/sviewer/</div>
             <p class="pcenter">
-                <a id="aboutClose" href="#" class="bt" title="fermer">fermer</a>
+                <a id="aboutClose" href="#" class="bt" title="Cerrar">Cerrar</a>
             </p>
         </div>
 
@@ -896,7 +896,7 @@ html,body {
                 <img id="permaQR" src="img/loading.gif" title="QR code vers la carte"/>
             </p>
             <p class="pcenter">
-                <a id="permalinkClose" class="bt" href="#">fermer</a>
+                <a id="permalinkClose" class="bt" href="#">Cerrar</a>
             </p>
         </div>
 
