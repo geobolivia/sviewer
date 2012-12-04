@@ -8,12 +8,13 @@ $Date: 2012-11-08 20:32:54 +0000 (jeu. 08 nov. 2012) $
 $Author: fabrice.phung $
     -->
     <head>
-        <title>Visualiseur simple GeoBretagne</title>
+        <title>GeoBolivia visualizador</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
         <meta name="apple-mobile-web-app-capable" content="yes">
 
         <!-- libraries -->
+        <script src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
         <script type="text/javascript" src="lib/openlayers/OpenLayers.js"></script>
         <script type="text/javascript" src="lib/proj4js/proj4js-compressed.js"></script>
         <script type="text/javascript" src="lib/LoadingPanel.js"></script>
@@ -32,7 +33,6 @@ Ol.DOTS_PER_INCH = 90.71428571428572;
 Ol.Util.onImageLoadErrorColor = 'transparent';
 Ol.ProxyHost = '/proxy/?url=';
 Proj4js.defs["EPSG:900913"] = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs";
-Proj4js.defs["EPSG:2154"] = "+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs";
 Proj4js.defs["EPSG:4326"] = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
 
 
@@ -84,27 +84,27 @@ function domAddNode(parentNode,tag,text,className) {
 // application hardcoded configuration
 var hardConfig = {
     // viewer title, may be overriden with &title=text
-    title: "Visualiseur simple GeoBretagne",
+    title: "GeoBolivia celular visualizador",
 
     // default wms onlineResource for &layers=layernames
-    wms: "http://geobretagne.fr/geoserver/ows",
-    geoserver: "http://geobretagne.fr/geoserver",
+    wms: "http://geo.gob.bo/geoserver/ows",
+    geoserver: "http://geo.gob.bo/geoserver",
 
 
     // initial extent and zoom, may be overriden with &x=lon&y=lat&z=zoom
-    initialExtent: new Ol.Bounds(145518, 6726671, 372058, 6868691),
+    initialExtent: new Ol.Bounds(-8766409.8999703,-3757032.81427298,-6261721.3575703,-0.0006729802116752),
     zinit: 8,
 
     // must match the TMS grid&scale if any
-    maxExtent: new Ol.Bounds(-357823.2365, 6037008.6939, 2146865.3059, 8541697.2363),
+    maxExtent: new Ol.Bounds(-20037508.34, -20037508.34,20037508.34, 20037508.34),
     maxResolution: 156543.0339,
     numZoomLevels: 21,
 
     // map center restricted in this extent
-    restrictedExtent: new Ol.Bounds(45518, 6626671, 472058, 6968691),
+    restrictedExtent: new Ol.Bounds(-8766409.8999703,-3757032.81427298,-6261721.3575703,-0.0006729802116752),
 
     // map projection
-    projMap: new Ol.Projection('EPSG:2154'),
+    projMap: new Ol.Projection('EPSG:900913'),
 
     // permalink and kml projection
     projDisplay: new Ol.Projection('EPSG:4326'),
@@ -139,32 +139,30 @@ var hardConfig = {
     // array of background map layers. Only one shall be visible on startup.
     // The user can switch layers using a button.
     layersBackground: [
-        new Ol.Layer.WMS(
-            "Plan OpenStreetMap",
-            "http://osm.geobretagne.fr/gwc01/service/wms",
-            { layers: 'imposm:default', format: 'image/png', transparent: false },
-            {
-                attribution: "Fond cartographique : OpenStreetMap CC-by-SA",
-                isBaseLayer: false,
-                tileSize: new Ol.Size(256,256),
-                visibility: true
-            }
+        new OpenLayers.Layer.OSM('OSM Mapnik'),
+        new OpenLayers.Layer.Google(
+            "Google Satellite",
+            {type: google.maps.MapTypeId.SATELLITE}
         ),
-        new Ol.Layer.WMS(
-            "Photographie a√©rienne",
-            "http://tile.geobretagne.fr/gwc02/service/wms",
-            { layers: 'satellite', format: 'image/jpeg', transparent: false },
-            {
-                attribution: "<br />Photographie a√©rienne : partenaires G√©oBretagne - IGN RGE BD ORTHO - PlanetObserver",
-                isBaseLayer: false,
-                tileSize: new Ol.Size(256,256),
-                visibility: false
-            }
+        new OpenLayers.Layer.Google(
+            "Google Physical",
+            {type: google.maps.MapTypeId.TERRAIN}
         )
     ],
 
     // array of overlay layers. They are always visible.
-    layersOverlay: [],
+    layersOverlay: [  
+        new Ol.Layer.WMS(
+            "Departementos",
+            "http://www.geo.gob.bo/geoserver/wms?",
+            { layers: 'mddryt:Limites_departamentales', format: 'image/png', transparent: true },
+            {
+                attribution: "Ministerio de Desarrollo Rural y Tierras",
+                isBaseLayer: false,
+                tileSize: new Ol.Size(256,256),
+                visibility: true
+            }
+        )],
 
     // CQL filter applied to the overlay layers
     CQL_FILTER: null
@@ -207,6 +205,7 @@ function init(){
      * MAP
      */
     var mapOptions = {
+        allOverlays: true,
         projection: hardConfig.projMap,
         displayProjection: hardConfig.projDisplay,
         maxExtent: hardConfig.maxExtent,
@@ -235,7 +234,7 @@ function init(){
 
     // "previous extent" control
     var navHistory = new Ol.Control.NavigationHistory({
-        previousOptions: { title: "retour" }
+        previousOptions: { title: "atras" }
     });
     map.addControl(navHistory);
 
@@ -243,10 +242,10 @@ function init(){
     var panel = new Ol.Control.Panel({ autoActivate: true });
     map.addControl(panel);
     panel.addControls([
-        new Ol.Control.ZoomToMaxExtent({title: "vue initiale"}),
+        new Ol.Control.ZoomToMaxExtent({title: "vista inicial"}),
         navHistory.previous,
-        new Ol.Control.ZoomIn({title: "zoom avant"}),
-        new Ol.Control.ZoomOut({title: "zoom arri&egrave;re"})
+        new Ol.Control.ZoomIn({title: "acercarse"}),
+        new Ol.Control.ZoomOut({title: "alejarse"})
     ]);
 
     // keyboard navigation
@@ -283,9 +282,9 @@ function init(){
     /**
      * overlay layers
      */
-    //~ if (hardConfig.hasOwnProperty("layersOverlay")) {
-        //~ map.addLayers(hardConfig.layersOverlay)
-    //~ }
+    if (hardConfig.hasOwnProperty("layersOverlay")) {
+        map.addLayers(hardConfig.layersOverlay)
+    }
 
 
     /**
@@ -323,7 +322,7 @@ function init(){
 
         getFeatureInfo = new Ol.Control.WMSGetFeatureInfo({
             url: hardConfig.wms,
-            title: 'Interroger la carte par clic',
+            title: 'Interrogar el mapa por clic',
             queryVisible: true,
             infoFormat: 'text/html',
             hover: false,
@@ -559,7 +558,7 @@ function init(){
             if (results.length>0) {
                 var position = format.getElementsByTagNameNS(results[0],"*","pos")[0];
                 var loc = (position.textContent) ? position.textContent.split(" ") : position.nodeTypedValue.split(" ");
-                var ptResult = new Ol.LonLat(loc[1], loc[0]).transform(new Ol.Projection("EPSG:4326"), new Ol.Projection("EPSG:2154"));
+                var ptResult = new Ol.LonLat(loc[1], loc[0]).transform(new Ol.Projection("EPSG:4326"), new Ol.Projection("EPSG:900913"));
                 var matchType = results[0].getElementsByTagName("GeocodeMatchCode")[0].getAttribute("matchType");
                 switch (matchType) {
                     case "City": zoom = 15; break;
@@ -574,20 +573,16 @@ function init(){
                     markGeoloc.addMarker(new Ol.Marker(ptResult));
                 }
                 else {
-                    alert("La g√©olocalisation a √©chou√© :\nlieu recherch√© hors carte");
+                    alert("La geolocalizaciÛn fallÛ:\nlugar buscado fuera del mapa");
                 }
             }
             else {
-                alert("La g√©olocalisation a √©chou√© :\naucun r√©sultat");
+                alert("La geolocalizaciÛn fallÛ:\nning˙n resultado");
             }
-        //~ } catch(err) {
-            //~ alert("la g√©olocalisation a √©chou√©");
-            //~ console.log(err);
-        //~ }
     };
 
     var onOpenLSFailure = function (response) {
-        alert("la g√©olocalisation a √©chou√©");
+        alert("lLa geolocalizaciÛn fallÛ");
     };
 
     Ol.Util.getElement("addressForm").onsubmit = function() {
@@ -886,16 +881,16 @@ html,body {
         </style>
     </head>
     <body>
-        <noscript>cette page requiert l'activation de javascript</noscript>
+        <noscript>esta p·gina requiere javascript</noscript>
         <div id="banner">
-            <a id="permalinkLink" href="#permalinkFrame" title="lien permanent sur la vue actuelle">
-                Permalien
+            <a id="permalinkLink" href="#permalinkFrame" title="vÌnculo permanente sobre la vista">
+                Permalink
             </a>
-            <a id="aboutLink" href="#aboutFrame" title="&agrave; propos">A propos</a>
-            <a id="helpLink" href="#helpFrame" title="Aide">Aide</a>
+            <a id="aboutLink" href="#aboutFrame" title="informaciones">Informaciones</a>
+            <a id="helpLink" href="#helpFrame" title="Ayuda">Ayuda</a>
             <form id="addressForm" method="get" target="#">
-                <input id="addressInput" type="text"  value="ex: rue Martenot, Rennes" title="ex: rue Martenot, Rennes" value="10 rue maurice fabre, rennes" />
-                <input type="submit" value="trouver" />
+                <input id="addressInput" type="text"  value="ej: plaza Murillo, La Paz" title="ej: plaza Murillo, La Paz" value="ej: plaza Murillo, La Paz" />
+                <input type="submit" value="buscar" />
             </form>
             <h1 id="title"></h1>
         </div>
@@ -966,7 +961,7 @@ html,body {
         <div id="aboutFrame" class="popupFrame">
             <div id="attributions"></div>
             <div id="baseAttributions"></div>
-            <div>visualiseur : http://github.com/geobretagne/sviewer/</div>
+            <div>visualizador : http://github.com/geobretagne/sviewer/</div>
             <p class="pcenter">
                 <a id="aboutClose" href="#" class="bt" title="fermer">fermer</a>
             </p>
@@ -975,9 +970,9 @@ html,body {
 
         <!-- permalink -->
         <div id="permalinkFrame" class="popupFrame">
-            <h2>Lien permanent</h2>
+            <h2>Vinculo permanente</h2>
             <p>
-                <a id="permalinkLink2" href="#" title="lien permanent vers la carte">lien vers la carte</a>
+                <a id="permalinkLink2" href="#" title="vinculo permanente">vinculo permanente</a>
                 <br />
                 <br />
                 <img id="permaQR" src="img/loading.gif" title="QR code vers la carte"/>
