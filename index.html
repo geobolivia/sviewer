@@ -93,12 +93,12 @@ var hardConfig = {
 
     // initial extent and zoom, may be overriden with &x=lon&y=lat&z=zoom
     initialExtent: new Ol.Bounds(-8766409.8999703,-3757032.81427298,-6261721.3575703,-0.0006729802116752),
-    zinit: 8,
+    zinit: 6,
 
     // must match the TMS grid&scale if any
     maxExtent: new Ol.Bounds(-20037508.34, -20037508.34,20037508.34, 20037508.34),
     maxResolution: 156543.0339,
-    numZoomLevels: 18,
+    numZoomLevels: 19,
 
     // map center restricted in this extent
     restrictedExtent: new Ol.Bounds(-8766409.8999703,-3757032.81427298,-6261721.3575703,-0.0006729802116752),
@@ -121,7 +121,7 @@ var hardConfig = {
         new OpenLayers.Layer.OSM('OSM Mapnik'),
         new OpenLayers.Layer.Google(
             "Google Satellite",
-            { type: google.maps.MapTypeId.SATELLITE, visibility: false }
+            { type: google.maps.MapTypeId.SATELLITE, visibility: false, numZoomLevels: 19, animationEnabled: false }
         )
     ],
 
@@ -132,7 +132,7 @@ var hardConfig = {
             "http://www.geo.gob.bo/geoserver/wms?",
             { layers: 'mddryt:Limites_departamentales', format: 'image/png', transparent: true },
             {
-                attribution: "Ministerio de Desarrollo Rural y Tierras",
+                attribution: "Departementos: Ministerio de Desarrollo Rural y Tierras",
                 isBaseLayer: false,
                 tileSize: new Ol.Size(256,256),
                 visibility: true
@@ -593,9 +593,9 @@ function init(){
                     domAddNode(p,"br","","");
                     var l = domAddNode(p,"img","","legend");
                     l.src = Ol.Util.urlAppend(capabilities.service.href, Ol.Util.getParameterString(legendArgs));
-                    domAddNode(p,"br","","");
-                    domAddNode(p,""," Source : ","");
-                    if (mdLayer.attribution) {
+                    if (mdLayer.attribution) {                    
+                        domAddNode(p,"br","","");
+                        domAddNode(p,""," Source : ","");
                         var a = domAddNode(p,'a',mdLayer.attribution.title,"attribution");
                         a.href = mdLayer.attribution.href;
                     }
